@@ -1,4 +1,0 @@
-ip,total_requests,failed_logins,not_found_requests,suspicious_requests,triggered_rules
-203.0.113.25,13,12,0,0,Possible Brute Force
-198.51.100.77,13,0,11,3,Possible Directory Scanning; Suspicious URL Patterns
-45.67.89.10,3,0,0,3,Suspicious URL Patterns

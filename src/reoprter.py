@@ -3,7 +3,12 @@ import csv
 
 
 def generate_report(results):
+    """
+    Display suspicious IP detection results in the terminal.
 
+    Args:
+        results: Result from scr/detector.py
+    """
     print("\n========== Suspicious IP Report ==========")
 
     if not results:
@@ -31,7 +36,15 @@ def generate_report(results):
     print(f"\nTotal Suspicious IPs: {len(results)}")
 
 def export_to_csv(results, output_file):
+    """
+    Export suspicious IP detection results to a CSV file.
 
+    Args:
+        results: Detection result returned by src/detector.py detect_suspicious_ips().
+        output_file: Destination path for the CSV output report.
+    """
+
+    #Create the output directory if it does not exist.
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     with open(output_file, "w", newline="", encoding="utf-8") as file:

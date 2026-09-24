@@ -20,7 +20,13 @@ def generate_report(results):
         print(f"\nIP: {result['ip']}")
         print(f"Total Requests: {result['total']}")
         print(f"Failed Logins: {result['failed_login']}")
+        print(f"Max Failed Login / 60s: "
+              f"{result['max_failed_logins_in_window']}")
+        
         print(f"404 Requests: {result['not_found']}")
+        print(f"Max 404 Requests / 60s: "
+              f"{result['max_404_in_window']}")
+        
         print(
             f"Suspicious Requests: "
             f"{result['suspicious_requests']}"
@@ -53,7 +59,9 @@ def export_to_csv(results, output_file):
             "ip",
             "total_requests",
             "failed_logins",
+            "max_failed_logins_60s",
             "not_found_requests",
+            "max_404_requests_60s",
             "suspicious_requests",
             "triggered_rules"
         ] 
@@ -71,9 +79,15 @@ def export_to_csv(results, output_file):
                 "ip": result["ip"],
                 "total_requests": result["total"],
                 "failed_logins": result["failed_login"],
+                "max_failed_logins_60s":
+                    result["max_failed_logins_in_window"],
                 "not_found_requests": result["not_found"],
-                "suspicious_requests": result["suspicious_requests"],
-                "triggered_rules": "; ".join(result["triggered_rules"])
+                "max_404_requests_60s":
+                    result["max_404_in_window"],
+                "suspicious_requests":
+                    result["suspicious_requests"],
+                "triggered_rules":
+                    "; ".join(result["triggered_rules"])
             })
 
     print(f"\nCSV report saved to: {output_file}")

@@ -134,6 +134,10 @@ def detect_suspicious_ips(logs):
 
         #Only include IPs that triggered at least one rule.
         if triggered_rules:
+
+            risk_score = calculate_risk_score(stats)
+            risk_level = get_risk_level(risk_score)
+
             result.append({
                 "ip": ip,
                 "total": stats["total"],
@@ -142,6 +146,50 @@ def detect_suspicious_ips(logs):
                 "suspicious_requests": stats["suspicious_requests"],
                 "max_failed_logins_in_window": stats["max_failed_logins_in_window"],
                 "max_404_in_window": stats["max_404_in_window"],
+                "risk_score": risk_score,
+                "risk_level": risk_level,
                 "triggered_rules": triggered_rules
             })
     return result
+
+def calculate_risk_score(stats):
+    """
+    Calculate a heuristic risk score from 0 to 100.
+    """
+
+    score = 0
+
+    #Brute force activity
+
+    if stats["max_failed_logins_in_window"] >= FAILED_LOGIN_THRESHOLD:
+        score += min(stats["max_failed_logins_in_window"] * 5, 40)
+
+    #Directory scanning activity
+
+    if stats["max_404_in_window"] >= NOT_FOUND_THRESHOLD:
+        score += min(stats["max_404_in_window"] * 2, 30)
+
+    #Suspicious URL activity
+
+    if stats["suspicious_requests"] >= SUSPICIOUS_REQUEST_THRESHOLD:
+        score += min(stats["suspicious_requests"] * 10, 30)
+
+    return min(score, 100)
+
+
+def get_risk_level(score):
+    """
+    Convert the numeric risk score into a risk level
+    """
+
+    if score >= 75:
+        return "CRITICAL"
+    
+    if score >= 50:
+        return "HIGH"
+    
+    if score >= 25:
+        return "MEDIUM"
+    
+    return "LOW"
+    e

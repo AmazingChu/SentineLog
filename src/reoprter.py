@@ -31,7 +31,15 @@ def generate_report(results):
             f"Suspicious Requests: "
             f"{result['suspicious_requests']}"
         )
+        print(
+            f"\nRisk Score: "
+            f"{result['risk_score']} / 100"
+        )
 
+        print(
+            f"Risk Level: "
+            f"{result['risk_level']}"
+        )
         print("\nTriggered Rules:")
 
         for rule in result["triggered_rules"]:
@@ -63,6 +71,8 @@ def export_to_csv(results, output_file):
             "not_found_requests",
             "max_404_requests_60s",
             "suspicious_requests",
+            "risk_score",
+            "risk_level",
             "triggered_rules"
         ] 
 
@@ -86,6 +96,10 @@ def export_to_csv(results, output_file):
                     result["max_404_in_window"],
                 "suspicious_requests":
                     result["suspicious_requests"],
+                "risk_score":
+                    result['risk_score'],
+                "risk_level":
+                    result['risk_level'],
                 "triggered_rules":
                     "; ".join(result["triggered_rules"])
             })

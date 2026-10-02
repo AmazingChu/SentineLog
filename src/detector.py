@@ -1,34 +1,10 @@
 from collections import defaultdict, deque
 from datetime import timedelta
-from src.config import (
-    FAILED_LOGIN_THRESHOLD,
-    FAILED_LOGIN_WINDOW_SECONDS,
-    NOT_FOUND_THRESHOLD,
-    NOT_FOUND_WINDOW_SECONDS,
-    SUSPICIOUS_REQUEST_THRESHOLD,
-    SUSPICIOUS_PATTERNS,
-    FAILED_LOGIN_SCORE_PER_EVENT,
-    FAILED_LOGIN_MAX_SCORE,
-    NOT_FOUND_SCORE_PER_EVENT,
-    NOT_FOUND_MAX_SCORE,
-    SUSPICIOUS_REQUEST_SCORE_PER_EVENT,
-    SUSPICIOUS_REQUEST_MAX_SCORE,
-    CRITICAL_RISK_THRESHOLD,
-    HIGH_RISK_THRESHOLD,
-    MEDIUM_RISK_THRESHOLD
-)
+from src import config as cfg
 
 
 #Common URL patterns associatedwith suspicious web activity
-SUSPICIOUS_PATTERNS = [
-    "../",
-    "/etc/passwd",
-    ".env",
-    "wp-admin",
-    "phpmyadmin",
-    "union select",
-    "<script"
-]
+
 
 def detect_suspicious_ips(logs):
     """
@@ -81,7 +57,7 @@ def detect_suspicious_ips(logs):
 
             window.append(timestamp)
 
-            cutoff = timestamp - timedelta(seconds=FAILED_LOGIN_WINDOW_SECONDS)
+            cutoff = timestamp - timedelta(seconds=cfg.FAILED_LOGIN_WINDOW_SECONDS)
 
             while window and window[0] < cutoff:
                 window.popleft()
@@ -98,7 +74,7 @@ def detect_suspicious_ips(logs):
             window = not_found_windows[ip]
             window.append(timestamp)
 
-            cutoff = timestamp - timedelta(seconds=NOT_FOUND_WINDOW_SECONDS)
+            cutoff = timestamp - timedelta(seconds=cfg.NOT_FOUND_WINDOW_SECONDS)
 
             while window and window[0] < cutoff:
                 window.popleft()
@@ -111,7 +87,7 @@ def detect_suspicious_ips(logs):
 
         lower_path = path.lower()
 
-        for pattern in SUSPICIOUS_PATTERNS:
+        for pattern in cfg.SUSPICIOUS_PATTERNS:
             if pattern in lower_path:
 
                 ip_stats[ip]["suspicious_requests"] += 1
@@ -124,21 +100,21 @@ def detect_suspicious_ips(logs):
         
         triggered_rules = []
 
-        if stats["max_failed_logins_in_window"] >= FAILED_LOGIN_THRESHOLD:
+        if stats["max_failed_logins_in_window"] >= cfg.FAILED_LOGIN_THRESHOLD:
             triggered_rules.append(
                 f"Possible Brute Force"
-                f"({FAILED_LOGIN_THRESHOLD}+ failures /"
-                f"{FAILED_LOGIN_WINDOW_SECONDS}s)"
+                f"({cfg.FAILED_LOGIN_THRESHOLD}+ failures /"
+                f"{cfg.FAILED_LOGIN_WINDOW_SECONDS}s)"
                 )
 
-        if stats["max_404_in_window"] >= NOT_FOUND_THRESHOLD:
+        if stats["max_404_in_window"] >= cfg.NOT_FOUND_THRESHOLD:
             triggered_rules.append(
                 f"Possible Directory Scanning"
-                f"({NOT_FOUND_THRESHOLD}+ 404 responses /"
-                f"{NOT_FOUND_WINDOW_SECONDS}s)"
+                f"({cfg.NOT_FOUND_THRESHOLD}+ 404 responses /"
+                f"{cfg.NOT_FOUND_WINDOW_SECONDS}s)"
                 )
 
-        if stats["suspicious_requests"] >= SUSPICIOUS_REQUEST_THRESHOLD:
+        if stats["suspicious_requests"] >= cfg.SUSPICIOUS_REQUEST_THRESHOLD:
             triggered_rules.append("Suspicious URL Patterns")
 
         #Only include IPs that triggered at least one rule.
@@ -170,18 +146,18 @@ def calculate_risk_score(stats):
 
     #Brute force activity
 
-    if stats["max_failed_logins_in_window"] >= FAILED_LOGIN_THRESHOLD:
-        score += min(stats["max_failed_logins_in_window"] * FAILED_LOGIN_SCORE_PER_EVENT, FAILED_LOGIN_MAX_SCORE)
+    if stats["max_failed_logins_in_window"] >= cfg.FAILED_LOGIN_THRESHOLD:
+        score += min(stats["max_failed_logins_in_window"] * cfg.FAILED_LOGIN_SCORE_PER_EVENT, cfg.FAILED_LOGIN_MAX_SCORE)
 
     #Directory scanning activity
 
-    if stats["max_404_in_window"] >= NOT_FOUND_THRESHOLD:
-        score += min(stats["max_404_in_window"] * NOT_FOUND_SCORE_PER_EVENT, NOT_FOUND_MAX_SCORE)
+    if stats["max_404_in_window"] >= cfg.NOT_FOUND_THRESHOLD:
+        score += min(stats["max_404_in_window"] * cfg.NOT_FOUND_SCORE_PER_EVENT, cfg.NOT_FOUND_MAX_SCORE)
 
     #Suspicious URL activity
 
-    if stats["suspicious_requests"] >= SUSPICIOUS_REQUEST_THRESHOLD:
-        score += min(stats["suspicious_requests"] * SUSPICIOUS_REQUEST_SCORE_PER_EVENT, SUSPICIOUS_REQUEST_MAX_SCORE)
+    if stats["suspicious_requests"] >= cfg.SUSPICIOUS_REQUEST_THRESHOLD:
+        score += min(stats["suspicious_requests"] * cfg.SUSPICIOUS_REQUEST_SCORE_PER_EVENT, cfg.SUSPICIOUS_REQUEST_MAX_SCORE)
 
     return min(score, 100)
 
@@ -191,13 +167,13 @@ def get_risk_level(score):
     Convert the numeric risk score into a risk level
     """
 
-    if score >= CRITICAL_RISK_THRESHOLD:
+    if score >= cfg.CRITICAL_RISK_THRESHOLD:
         return "CRITICAL"
     
-    if score >= HIGH_RISK_THRESHOLD:
+    if score >= cfg.HIGH_RISK_THRESHOLD:
         return "HIGH"
     
-    if score >= MEDIUM_RISK_THRESHOLD:
+    if score >= cfg.MEDIUM_RISK_THRESHOLD:
         return "MEDIUM"
     
     return "LOW"

@@ -1,14 +1,23 @@
 from collections import defaultdict, deque
 from datetime import timedelta
+from src.config import (
+    FAILED_LOGIN_THRESHOLD,
+    FAILED_LOGIN_WINDOW_SECONDS,
+    NOT_FOUND_THRESHOLD,
+    NOT_FOUND_WINDOW_SECONDS,
+    SUSPICIOUS_REQUEST_THRESHOLD,
+    SUSPICIOUS_PATTERNS,
+    FAILED_LOGIN_SCORE_PER_EVENT,
+    FAILED_LOGIN_MAX_SCORE,
+    NOT_FOUND_SCORE_PER_EVENT,
+    NOT_FOUND_MAX_SCORE,
+    SUSPICIOUS_REQUEST_SCORE_PER_EVENT,
+    SUSPICIOUS_REQUEST_MAX_SCORE,
+    CRITICAL_RISK_THRESHOLD,
+    HIGH_RISK_THRESHOLD,
+    MEDIUM_RISK_THRESHOLD
+)
 
-#Detection Thresholds
-FAILED_LOGIN_THRESHOLD = 5
-FAILED_LOGIN_WINDOW_SECONDS = 60
-
-NOT_FOUND_THRESHOLD = 10
-NOT_FOUND_WINDOW_SECONDS = 60
-
-SUSPICIOUS_REQUEST_THRESHOLD = 3
 
 #Common URL patterns associatedwith suspicious web activity
 SUSPICIOUS_PATTERNS = [
@@ -162,17 +171,17 @@ def calculate_risk_score(stats):
     #Brute force activity
 
     if stats["max_failed_logins_in_window"] >= FAILED_LOGIN_THRESHOLD:
-        score += min(stats["max_failed_logins_in_window"] * 5, 40)
+        score += min(stats["max_failed_logins_in_window"] * FAILED_LOGIN_SCORE_PER_EVENT, FAILED_LOGIN_MAX_SCORE)
 
     #Directory scanning activity
 
     if stats["max_404_in_window"] >= NOT_FOUND_THRESHOLD:
-        score += min(stats["max_404_in_window"] * 2, 30)
+        score += min(stats["max_404_in_window"] * NOT_FOUND_SCORE_PER_EVENT, NOT_FOUND_MAX_SCORE)
 
     #Suspicious URL activity
 
     if stats["suspicious_requests"] >= SUSPICIOUS_REQUEST_THRESHOLD:
-        score += min(stats["suspicious_requests"] * 10, 30)
+        score += min(stats["suspicious_requests"] * SUSPICIOUS_REQUEST_SCORE_PER_EVENT, SUSPICIOUS_REQUEST_MAX_SCORE)
 
     return min(score, 100)
 
@@ -182,13 +191,13 @@ def get_risk_level(score):
     Convert the numeric risk score into a risk level
     """
 
-    if score >= 75:
+    if score >= CRITICAL_RISK_THRESHOLD:
         return "CRITICAL"
     
-    if score >= 50:
+    if score >= HIGH_RISK_THRESHOLD:
         return "HIGH"
     
-    if score >= 25:
+    if score >= MEDIUM_RISK_THRESHOLD:
         return "MEDIUM"
     
     return "LOW"

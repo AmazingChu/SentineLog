@@ -1,0 +1,38 @@
+# Detection thresholds
+
+FAILED_LOGIN_THRESHOLD = 5
+FAILED_LOGIN_WINDOW_SECONDS = 60
+
+NOT_FOUND_THRESHOLD = 10
+NOT_FOUND_WINDOW_SECONDS = 60
+
+SUSPICIOUS_REQUEST_THRESHOLD = 3
+
+#Suspicious URL patterns
+
+SUSPICIOUS_PATTERNS = [
+    "../",
+    "/etc/passwd",
+    ".env",
+    "wp-admin",
+    "phpmyadmin",
+    "union select",
+    "<script"
+]
+
+#Risk score weight
+
+FAILED_LOGIN_SCORE_PER_EVENT = 5
+FAILED_LOGIN_MAX_SCORE = 40
+
+NOT_FOUND_SCORE_PER_EVENT = 2
+NOT_FOUND_MAX_SCORE = 30
+
+SUSPICIOUS_REQUEST_SCORE_PER_EVENT = 10
+SUSPICIOUS_REQUEST_MAX_SCORE = 30
+
+#Risk level thresholds
+
+CRITICAL_RISK_THRESHOLD = 75
+HIGH_RISK_THRESHOLD = 50
+MEDIUM_RISK_THRESHOLD = 25

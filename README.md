@@ -20,6 +20,9 @@ The project is designed as a lightweight security monitoring tool and learning p
 - Terminal report generation
 - CSV report export
 - Automated testing with pytest
+- Command-line interface
+- Custom log file input
+- Custom CSV output path
 
 
 # Detection Rules
